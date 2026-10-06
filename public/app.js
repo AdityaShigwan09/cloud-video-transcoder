@@ -137,6 +137,8 @@
 
   // --- USER AUTH & ROLE SYSTEM ---
   function openAdminModal() {
+    adminUserInput.value = '';
+    adminPassInput.value = '';
     adminErrorMsg.style.display = 'none';
     adminModal.classList.add('active');
   }
@@ -153,7 +155,7 @@
     });
   }
 
-  // Admin Login - Credentials (admin / admin123)
+  // Admin Login Verification
   confirmAdminBtn.addEventListener('click', () => {
     const username = adminUserInput.value.trim();
     const password = adminPassInput.value.trim();
