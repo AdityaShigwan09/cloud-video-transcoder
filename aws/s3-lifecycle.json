@@ -1,0 +1,17 @@
+{
+  "Rules": [
+    {
+      "ID": "CleanupRawUploadsAndIncompleteMultipart",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "uploads/"
+      },
+      "Expiration": {
+        "Days": 7
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    }
+  ]
+}

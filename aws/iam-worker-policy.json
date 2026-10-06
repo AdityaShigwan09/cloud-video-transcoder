@@ -1,0 +1,46 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3RawBucketAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:ListBucket",
+        "s3:PutObjectAcl"
+      ],
+      "Resource": [
+        "arn:aws:s3:::video-processing2",
+        "arn:aws:s3:::video-processing2/*"
+      ]
+    },
+    {
+      "Sid": "S3ProcessedBucketAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:PutObjectAcl"
+      ],
+      "Resource": [
+        "arn:aws:s3:::video-processing01",
+        "arn:aws:s3:::video-processing01/*"
+      ]
+    },
+    {
+      "Sid": "SQSWorkerQueueOperations",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl",
+        "sqs:SendMessage"
+      ],
+      "Resource": "arn:aws:sqs:us-east-1:291827353919:CloudStreamJobQueue"
+    }
+  ]
+}

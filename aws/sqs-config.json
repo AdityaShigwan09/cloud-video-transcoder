@@ -1,0 +1,10 @@
+{
+  "QueueName": "video-transcode-queue",
+  "Attributes": {
+    "VisibilityTimeout": "600",
+    "MessageRetentionPeriod": "86400",
+    "ReceiveMessageWaitTimeSeconds": "20",
+    "DelaySeconds": "0",
+    "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:123456789012:video-transcode-dlq\",\"maxReceiveCount\":\"3\"}"
+  }
+}
