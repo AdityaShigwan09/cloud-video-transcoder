@@ -34,13 +34,12 @@ class AwsService {
   async generatePresignedUploadUrl(s3Key, mimeType) {
     if (!this.hasAwsCreds) {
       console.log(`[AWS] Generating local dev simulation upload URL for key: ${s3Key}`);
-      return `http://localhost:${config.port}/api/mock-s3-upload?key=${encodeURIComponent(s3Key)}`;
+      return `/api/mock-s3-upload?key=${encodeURIComponent(s3Key)}`;
     }
 
     const command = new PutObjectCommand({
       Bucket: config.aws.rawBucket,
-      Key: s3Key,
-      ContentType: mimeType
+      Key: s3Key
     });
 
     return await getSignedUrl(this.s3Client, command, {
