@@ -12,20 +12,15 @@ class AwsService {
       region: config.aws.region
     };
     if (hasExplicitCreds) {
-      s3Config.credentials = {
+      const creds = {
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey
       };
-    }
-
-    const sqsConfig = {
-      region: config.aws.region
-    };
-    if (hasExplicitCreds) {
-      sqsConfig.credentials = {
-        accessKeyId: config.aws.accessKeyId,
-        secretAccessKey: config.aws.secretAccessKey
-      };
+      if (config.aws.sessionToken) {
+        creds.sessionToken = config.aws.sessionToken;
+      }
+      s3Config.credentials = creds;
+      sqsConfig.credentials = creds;
     }
 
     this.s3Client = new S3Client(s3Config);

@@ -9,6 +9,7 @@ module.exports = {
     region: process.env.AWS_REGION || 'us-east-1',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    sessionToken: process.env.AWS_SESSION_TOKEN || '',
     rawBucket: process.env.AWS_RAW_S3_BUCKET || 'my-raw-videos-bucket',
     processedBucket: process.env.AWS_PROCESSED_S3_BUCKET || 'my-processed-videos-bucket',
     sqsQueueUrl: process.env.AWS_SQS_QUEUE_URL || 'https://sqs.us-east-1.amazonaws.com/123456789012/video-transcode-queue',
