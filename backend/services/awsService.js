@@ -32,8 +32,8 @@ class AwsService {
    * Generates AWS SigV4 S3 Presigned PUT URL for client upload
    */
   async generatePresignedUploadUrl(s3Key, mimeType) {
-    if (!this.hasAwsCreds) {
-      console.log(`[AWS] Generating local dev simulation upload URL for key: ${s3Key}`);
+    if (!this.hasAwsCreds || process.env.USE_SERVER_UPLOAD === 'true') {
+      console.log(`[AWS] Generating server stream upload URL for key: ${s3Key}`);
       return `/api/mock-s3-upload?key=${encodeURIComponent(s3Key)}`;
     }
 
