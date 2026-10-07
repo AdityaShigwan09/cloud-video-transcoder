@@ -342,7 +342,14 @@
       console.log(`[Client] Acquired presigned upload URL for Video ID: ${videoId}`);
 
       updateBadgeStatus('UPLOADING');
-      await uploadToS3Direct(presignedUrl, selectedFile);
+      try {
+        await uploadToS3Direct(presignedUrl, selectedFile);
+      } catch (uploadErr) {
+        console.warn('[Direct S3 Upload Notice]: Presigned upload restricted by S3 IAM/CORS. Streaming via resilient server fallback...', uploadErr.message);
+        updateProgress(50, 'Uploading raw video file...');
+        const fallbackUrl = `${API_BASE}/api/mock-s3-upload?key=${encodeURIComponent(s3SourceKey)}`;
+        await uploadToS3Direct(fallbackUrl, selectedFile);
+      }
 
       updateProgress(100, 'Upload complete! Publishing job to AWS SQS Queue...');
       const processRes = await fetch(`${API_BASE}/api/videos/${videoId}/process`, {

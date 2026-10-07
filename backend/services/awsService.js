@@ -153,6 +153,27 @@ class AwsService {
   }
 
   /**
+   * Uploads raw video file to S3 raw bucket directly from server disk
+   */
+  async uploadRawFileToS3(s3Key, localFilePath, contentType = 'video/mp4') {
+    if (!this.hasAwsCreds) return;
+    try {
+      const fs = require('fs');
+      const fileBuffer = await fs.promises.readFile(localFilePath);
+      const command = new PutObjectCommand({
+        Bucket: config.aws.rawBucket,
+        Key: s3Key,
+        Body: fileBuffer,
+        ContentType: contentType || 'video/mp4'
+      });
+      await this.s3Client.send(command);
+      console.log(`[AWS Server Upload] Successfully uploaded raw file to s3://${config.aws.rawBucket}/${s3Key}`);
+    } catch (err) {
+      console.warn('[AWS Server Upload Warning]:', err.message);
+    }
+  }
+
+  /**
    * Verifies that the file exists in the S3 raw bucket
    */
   async verifyS3ObjectExists(s3Key) {

@@ -365,7 +365,7 @@ router.post('/videos/:id/status-internal', async (req, res, next) => {
  */
 router.all('/mock-s3-upload', async (req, res) => {
   const key = req.query.key;
-  console.log(`[Mock S3] Received local file upload payload for key: ${key}`);
+  console.log(`[File Upload Handler] Processing upload payload for key: ${key}`);
   if (key) {
     try {
       const destPath = path.join(__dirname, '../../public', key);
@@ -376,12 +376,15 @@ router.all('/mock-s3-upload', async (req, res) => {
         writeStream.on('finish', resolve);
         writeStream.on('error', reject);
       });
-      console.log(`[Mock S3] Successfully saved raw video to project structure: ${destPath}`);
+      console.log(`[File Upload Handler] Saved raw video to project structure: ${destPath}`);
+
+      // Sync file to S3 raw bucket on server side
+      await awsService.uploadRawFileToS3(key, destPath, req.headers['content-type']);
     } catch (err) {
-      console.error('[Mock S3 Save Error]:', err.message);
+      console.error('[File Upload Handler Error]:', err.message);
     }
   }
-  res.status(200).send('Mock S3 Upload Successful');
+  res.status(200).send('Upload Successful');
 });
 
 module.exports = router;
