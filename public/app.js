@@ -342,14 +342,7 @@
       console.log(`[Client] Acquired presigned upload URL for Video ID: ${videoId}`);
 
       updateBadgeStatus('UPLOADING');
-      try {
-        await uploadToS3Direct(presignedUrl, selectedFile);
-      } catch (uploadErr) {
-        console.warn('[Direct S3 Upload Notice]: Presigned upload restricted by S3 IAM/CORS. Streaming via resilient server fallback...', uploadErr.message);
-        updateProgress(50, 'Uploading raw video file...');
-        const fallbackUrl = `${API_BASE}/api/mock-s3-upload?key=${encodeURIComponent(s3SourceKey)}`;
-        await uploadToS3Direct(fallbackUrl, selectedFile);
-      }
+      await uploadFileResilient(presignedUrl, selectedFile, s3SourceKey);
 
       updateProgress(100, 'Upload complete! Publishing job to AWS SQS Queue...');
       const processRes = await fetch(`${API_BASE}/api/videos/${videoId}/process`, {
@@ -376,29 +369,46 @@
     }
   });
 
-  function uploadToS3Direct(presignedUrl, file) {
+  function uploadFileResilient(url, file, s3SourceKey) {
     return new Promise((resolve, reject) => {
+      const isServerEndpoint = url.includes('/api/mock-s3-upload');
       const xhr = new XMLHttpRequest();
-      xhr.open('PUT', presignedUrl, true);
-      xhr.setRequestHeader('Content-Type', file.type);
+      xhr.open(isServerEndpoint ? 'POST' : 'PUT', url, true);
+      if (file.type) {
+        xhr.setRequestHeader('Content-Type', file.type);
+      }
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
-          updateProgress(percent, `Uploading directly to AWS S3... ${percent}% (${formatBytes(event.loaded)} / ${formatBytes(event.total)})`);
+          const label = isServerEndpoint ? 'Uploading raw video via server stream...' : 'Uploading directly to AWS S3...';
+          updateProgress(percent, `${label} ${percent}% (${formatBytes(event.loaded)} / ${formatBytes(event.total)})`);
         }
       };
 
       xhr.onload = () => {
         if (xhr.status === 200 || xhr.status === 204) {
           resolve();
+        } else if (!isServerEndpoint && (xhr.status === 403 || xhr.status === 0 || xhr.status === 400 || xhr.status === 404)) {
+          console.warn(`[Direct S3 Upload Notice]: Presigned upload failed with status ${xhr.status}. Auto-switching to server upload fallback...`);
+          const fallbackUrl = `${API_BASE}/api/mock-s3-upload?key=${encodeURIComponent(s3SourceKey)}`;
+          uploadFileResilient(fallbackUrl, file, s3SourceKey).then(resolve).catch(reject);
         } else {
-          reject(new Error(`S3 upload failed with HTTP status ${xhr.status}`));
+          reject(new Error(`Video upload failed with HTTP status ${xhr.status}`));
         }
       };
 
-      xhr.onerror = () => reject(new Error('Network error during S3 presigned upload. (Check AWS S3 Bucket CORS policy or AWS credentials in .env)'));
-      xhr.onabort = () => reject(new Error('S3 upload aborted.'));
+      xhr.onerror = () => {
+        if (!isServerEndpoint) {
+          console.warn('[Direct S3 Upload Notice]: CORS / Network error on presigned S3 upload. Auto-switching to server upload fallback...');
+          const fallbackUrl = `${API_BASE}/api/mock-s3-upload?key=${encodeURIComponent(s3SourceKey)}`;
+          uploadFileResilient(fallbackUrl, file, s3SourceKey).then(resolve).catch(reject);
+        } else {
+          reject(new Error('Network error during video upload.'));
+        }
+      };
+
+      xhr.onabort = () => reject(new Error('Video upload aborted.'));
 
       xhr.send(file);
     });
