@@ -338,7 +338,7 @@ class DbService {
       if (cdnBase.includes('.')) {
         cdnBase = `https://${cdnBase}`;
       } else {
-        cdnBase = `https://${cdnBase}.s3.${config.aws.region || 'us-east-1'}.amazonaws.com`;
+        cdnBase = '';
       }
     }
 
@@ -347,9 +347,9 @@ class DbService {
       if (s3Key.startsWith('http://') || s3Key.startsWith('https://')) return s3Key;
       const cleanKey = s3Key.replace(/^\/+/, '');
 
-      const usePresignedGet = config.aws.usePresignedGetUrls || (hasAwsCreds && (!cdnBase || cdnBase.includes('.s3.') || cdnBase.includes('s3.amazonaws.com')));
+      const usePresignedGet = process.env.AWS_USE_PRESIGNED_GET_URLS === 'true' || process.env.USE_PRESIGNED_URLS === 'true';
 
-      if (hasAwsCreds && usePresignedGet) {
+      if (hasAwsCreds && usePresignedGet && !cdnBase) {
         try {
           const awsService = require('./awsService');
           const signedUrl = await awsService.generatePresignedDownloadUrl(cleanKey);
