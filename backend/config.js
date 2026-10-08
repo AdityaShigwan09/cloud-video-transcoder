@@ -10,10 +10,10 @@ module.exports = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
     sessionToken: process.env.AWS_SESSION_TOKEN || '',
-    rawBucket: process.env.AWS_RAW_S3_BUCKET || 'my-raw-videos-bucket',
-    processedBucket: process.env.AWS_PROCESSED_S3_BUCKET || 'my-processed-videos-bucket',
-    sqsQueueUrl: process.env.AWS_SQS_QUEUE_URL || 'https://sqs.us-east-1.amazonaws.com/123456789012/video-transcode-queue',
-    cloudfrontDomain: process.env.CLOUDFRONT_DOMAIN || 'https://d111111abcdef8.cloudfront.net',
+    rawBucket: (process.env.AWS_RAW_S3_BUCKET && process.env.AWS_RAW_S3_BUCKET.trim()) || 'video-processing2',
+    processedBucket: (process.env.AWS_PROCESSED_S3_BUCKET && process.env.AWS_PROCESSED_S3_BUCKET.trim()) || 'video-processing01',
+    sqsQueueUrl: process.env.AWS_SQS_QUEUE_URL || 'https://sqs.us-east-1.amazonaws.com/291827353919/CloudStreamJobQueue',
+    cloudfrontDomain: process.env.CLOUDFRONT_DOMAIN || '',
     usePresignedGetUrls: process.env.AWS_USE_PRESIGNED_GET_URLS === 'true' || process.env.USE_PRESIGNED_URLS === 'true'
   },
 

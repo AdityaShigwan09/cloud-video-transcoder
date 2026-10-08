@@ -11,6 +11,9 @@ class AwsService {
     const s3Config = {
       region: config.aws.region
     };
+    const sqsConfig = {
+      region: config.aws.region
+    };
     if (hasExplicitCreds) {
       const creds = {
         accessKeyId: config.aws.accessKeyId,
@@ -39,7 +42,8 @@ class AwsService {
 
     const command = new PutObjectCommand({
       Bucket: config.aws.rawBucket,
-      Key: s3Key
+      Key: s3Key,
+      ContentType: mimeType || 'video/mp4'
     });
 
     return await getSignedUrl(this.s3Client, command, {

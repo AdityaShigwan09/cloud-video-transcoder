@@ -21,6 +21,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Handle favicon requests
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Serve static frontend files and local converted video assets
 app.use(express.static(publicDir));
 
