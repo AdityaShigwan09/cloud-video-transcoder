@@ -352,7 +352,8 @@
       });
 
       if (!processRes.ok) {
-        throw new Error('Failed to enqueue video processing job.');
+        const errJson = await processRes.json().catch(() => ({}));
+        throw new Error(errJson.error || errJson.message || `Failed to enqueue video processing job (HTTP ${processRes.status}).`);
       }
 
       const processJson = await processRes.json();
