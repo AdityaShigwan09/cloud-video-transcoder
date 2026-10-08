@@ -328,12 +328,11 @@ class DbService {
   }
 
   static async formatDTO(row) {
-    const hasAwsCreds = Boolean(config.aws.accessKeyId && config.aws.secretAccessKey);
+    const hasAwsCreds = Boolean((config.aws.accessKeyId && config.aws.secretAccessKey) || process.env.NODE_ENV === 'production' || process.env.USE_REAL_AWS === 'true');
     let cdnBase = config.aws.cloudfrontDomain ? config.aws.cloudfrontDomain.replace(/\/$/, '') : '';
 
-    // If AWS credentials are absent or using default placeholder domain, fallback to local project paths
-    const isLocalProject = !hasAwsCreds || !cdnBase || cdnBase.includes('d111111abcdef8.cloudfront.net') || cdnBase.includes('my-raw-videos-bucket');
-    if (isLocalProject) {
+    const isPlaceholderCdn = !cdnBase || cdnBase.includes('d111111abcdef8.cloudfront.net') || cdnBase.includes('my-raw-videos-bucket') || cdnBase === 'video-processing01';
+    if (isPlaceholderCdn && !hasAwsCreds) {
       cdnBase = '';
     } else if (cdnBase && !cdnBase.startsWith('http://') && !cdnBase.startsWith('https://')) {
       if (cdnBase.includes('.')) {
