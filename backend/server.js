@@ -43,10 +43,10 @@ app.use((err, req, res, next) => {
 async function startServer() {
   await dbService.connect();
   
-  app.listen(config.port, () => {
+  app.listen(config.port, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(`  Video Transcoding API Server running on port ${config.port}`);
-    console.log(`  Frontend UI available at: http://localhost:${config.port}`);
+    console.log(`  Frontend UI available at: http://0.0.0.0:${config.port}`);
     console.log(`  Converted videos directory: ${processedDir}`);
     console.log(`====================================================`);
   });
