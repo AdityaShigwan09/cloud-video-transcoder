@@ -12,8 +12,9 @@ worker/.env
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
-data/*.sqlite
-backend/data/*.sqlite
+*.sqlite-shm
+data/
+backend/data/
 
 # Uploaded and Processed video files (transcoded media)
 public/uploads/*

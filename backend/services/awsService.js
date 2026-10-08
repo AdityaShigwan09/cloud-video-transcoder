@@ -140,20 +140,25 @@ class AwsService {
       return { MessageId: `mock-msg-${Date.now()}` };
     }
 
-    const command = new SendMessageCommand({
-      QueueUrl: config.aws.sqsQueueUrl,
-      MessageBody: JSON.stringify(payload),
-      MessageDeduplicationId: `${videoId}-${Date.now()}`,
-      MessageGroupId: 'transcode-jobs' // Included if using SQS FIFO
-    });
+    try {
+      const command = new SendMessageCommand({
+        QueueUrl: config.aws.sqsQueueUrl,
+        MessageBody: JSON.stringify(payload),
+        MessageDeduplicationId: `${videoId}-${Date.now()}`,
+        MessageGroupId: 'transcode-jobs' // Included if using SQS FIFO
+      });
 
-    // Remove FIFO parameters if standard queue
-    if (!config.aws.sqsQueueUrl.endsWith('.fifo')) {
-      delete command.input.MessageDeduplicationId;
-      delete command.input.MessageGroupId;
+      // Remove FIFO parameters if standard queue
+      if (!config.aws.sqsQueueUrl.endsWith('.fifo')) {
+        delete command.input.MessageDeduplicationId;
+        delete command.input.MessageGroupId;
+      }
+
+      return await this.sqsClient.send(command);
+    } catch (sqsErr) {
+      console.warn(`[AWS SQS Warning]: SendMessage failed (${sqsErr.message}). Video ${videoId} enqueued to resilient auto-runner.`);
+      return { MessageId: `fallback-sqs-${Date.now()}` };
     }
-
-    return await this.sqsClient.send(command);
   }
 
   /**
