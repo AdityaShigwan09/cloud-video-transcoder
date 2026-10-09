@@ -13,8 +13,20 @@ const RAW_BUCKET = process.env.AWS_RAW_S3_BUCKET || 'video-processing2';
 const PROCESSED_BUCKET = process.env.AWS_PROCESSED_S3_BUCKET || 'video-processing01';
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:4000/api';
 
-const s3Client = new S3Client({ region: REGION });
-const sqsClient = new SQSClient({ region: REGION });
+const awsClientConfig = { region: REGION };
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  const creds = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  };
+  if (process.env.AWS_SESSION_TOKEN) {
+    creds.sessionToken = process.env.AWS_SESSION_TOKEN;
+  }
+  awsClientConfig.credentials = creds;
+}
+
+const s3Client = new S3Client(awsClientConfig);
+const sqsClient = new SQSClient(awsClientConfig);
 
 class WorkerService {
   constructor() {

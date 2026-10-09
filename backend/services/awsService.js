@@ -178,7 +178,8 @@ class AwsService {
       await this.s3Client.send(command);
       console.log(`[AWS Server Upload] Successfully uploaded raw file to s3://${config.aws.rawBucket}/${s3Key}`);
     } catch (err) {
-      console.warn('[AWS Server Upload Warning]:', err.message);
+      console.error('[AWS Server Upload Error]:', err.message);
+      throw err;
     }
   }
 
