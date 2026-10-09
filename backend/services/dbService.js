@@ -328,36 +328,20 @@ class DbService {
   }
 
   static async formatDTO(row) {
-    const hasAwsCreds = Boolean((config.aws.accessKeyId && config.aws.secretAccessKey) || process.env.NODE_ENV === 'production' || process.env.USE_REAL_AWS === 'true');
-    let cdnBase = config.aws.cloudfrontDomain ? config.aws.cloudfrontDomain.replace(/\/$/, '') : '';
+    let cdnBase = config.aws.cloudfrontDomain ? config.aws.cloudfrontDomain.trim().replace(/\/$/, '') : '';
 
-    const isPlaceholderCdn = !cdnBase || cdnBase.includes('d111111abcdef8.cloudfront.net') || cdnBase.includes('my-raw-videos-bucket') || cdnBase === 'video-processing01';
-    if (isPlaceholderCdn && !hasAwsCreds) {
-      cdnBase = '';
-    } else if (cdnBase && !cdnBase.startsWith('http://') && !cdnBase.startsWith('https://')) {
-      if (cdnBase.includes('.')) {
+    if (cdnBase && !cdnBase.includes('d111111abcdef8.cloudfront.net') && !cdnBase.includes('my-raw-videos-bucket') && cdnBase !== 'video-processing01') {
+      if (!cdnBase.startsWith('http://') && !cdnBase.startsWith('https://')) {
         cdnBase = `https://${cdnBase}`;
-      } else {
-        cdnBase = '';
       }
+    } else {
+      cdnBase = '';
     }
 
     const buildUrl = async (s3Key) => {
       if (!s3Key) return null;
       if (s3Key.startsWith('http://') || s3Key.startsWith('https://')) return s3Key;
       const cleanKey = s3Key.replace(/^\/+/, '');
-
-      const usePresignedGet = process.env.AWS_USE_PRESIGNED_GET_URLS === 'true' || process.env.USE_PRESIGNED_URLS === 'true';
-
-      if (hasAwsCreds && usePresignedGet && !cdnBase) {
-        try {
-          const awsService = require('./awsService');
-          const signedUrl = await awsService.generatePresignedDownloadUrl(cleanKey);
-          if (signedUrl) return signedUrl;
-        } catch (e) {
-          console.warn('[DB] Failed to generate presigned GET URL, falling back to static URL:', e.message);
-        }
-      }
 
       return cdnBase ? `${cdnBase}/${cleanKey}` : `/${cleanKey}`;
     };
